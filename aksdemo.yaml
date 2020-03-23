@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aksdemoapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aksdemoapp
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5 
+  template:
+    metadata:
+      labels:
+        app: aksdemoapp
+    spec:
+      nodeSelector:
+        "beta.kubernetes.io/os": linux
+      containers:
+      - name: aksdemoapp
+        image: aksdemocontainer2020.azurecr.io/aksdemoapp:v2
+        ports:
+        - containerPort: 8080
+          name: "http"
+        - containerPort: 5005
+          name: "debug"
+        resources:
+          requests:
+            cpu: 250m
+          limits:
+            cpu: 500m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aksdemoapp
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: aksdemoapp
